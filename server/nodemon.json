@@ -1,0 +1,7 @@
+{
+  "watch": ["server.js", "config", "controllers", "middleware", "models", "repositories", "routes", "services", "utils", "database", ".env"],
+  "ext": "js,mjs,cjs,json",
+  "ignore": ["node_modules/**", "scripts/**", "migrations/**", "*.test.js"],
+  "delay": 1000,
+  "signal": "SIGUSR2"
+}
