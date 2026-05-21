@@ -1,0 +1,15 @@
+/* BranchesPage.css - Branches page action buttons */
+
+.icon-btn.deactivate-btn:hover {
+  background: rgba(232, 163, 23, 0.12);
+  color: var(--warning-text);
+}
+
+.icon-btn.activate-btn {
+  color: var(--primary-emerald);
+}
+
+.icon-btn.activate-btn:hover {
+  background: rgba(31, 122, 77, 0.12);
+  color: var(--primary-emerald);
+}
