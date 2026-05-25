@@ -1,0 +1,44 @@
+/* AccountProvisionPage.css - Account & session monitoring styling */
+
+.sessions-section {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sessions-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sessions-section h3 svg {
+  color: var(--primary-cyan);
+}
+
+.session-role {
+  margin-left: 0.5rem;
+  font-size: 0.68rem;
+  padding: 0.1rem 0.45rem;
+}
+
+.inline-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.inline-check input {
+  accent-color: var(--primary-cyan);
+  cursor: pointer;
+}
+
+/* Spinner on a row action while its request runs (e.g. "Resend invitation" waiting for the email to send) */
+.action-spin { animation: action-rotate 1s linear infinite; }
+@keyframes action-rotate { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .action-spin { animation: none; }
+}
