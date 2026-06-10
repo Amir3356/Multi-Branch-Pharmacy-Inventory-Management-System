@@ -1,0 +1,44 @@
+/* SalesPage.css - Sales page summary & invoice receipt styling */
+
+.sale-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: rgb(var(--overlay-rgb) / 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.sale-summary div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.sale-summary small {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sale-summary strong {
+  font-size: 0.92rem;
+  color: var(--text-main);
+}
+
+.sale-summary .sale-total {
+  font-size: 1.05rem;
+  color: var(--primary-emerald);
+}
+
+.negative-text {
+  color: var(--danger-text);
+}
+
+.data-table td.negative-text,
+.sale-summary strong.negative-text {
+  color: var(--danger-text);
+}
