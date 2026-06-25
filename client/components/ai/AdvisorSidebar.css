@@ -1,0 +1,346 @@
+/* AdvisorSidebar.css - the Owner's AI business advisor beside the dashboard */
+
+/* Layout: on wide screens the advisor sits beside the dashboard; below that it slides over it from the right */
+.owner-dashboard-layout { position: relative; }
+.owner-dashboard-main { min-width: 0; }
+
+.advisor-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  align-self: flex-end;
+}
+
+.advisor-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1001;
+  width: min(420px, 100vw);
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  animation: advisor-in 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.advisor-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgb(var(--overlay-rgb) / 0.35);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+@keyframes advisor-in {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .advisor-sidebar { animation: none; }
+}
+
+@media (min-width: 1440px) {
+  .owner-dashboard-layout.with-advisor {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 390px;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  .with-advisor .advisor-sidebar {
+    position: sticky;
+    top: 1rem;
+    z-index: auto;
+    width: auto;
+    /* Fits the screen below the page header at the top, so the chat box is visible without scrolling */
+    height: max(520px, calc(100vh - 9.5rem));
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+    overflow: hidden;
+    animation: none;
+  }
+  .with-advisor .advisor-backdrop { display: none; }
+}
+
+/* Header and tabs */
+.advisor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.advisor-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.advisor-header h2 svg { color: var(--primary-cyan); }
+
+.advisor-scope {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.advisor-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.advisor-icon-btn:hover { background: rgb(var(--overlay-rgb) / 0.06); color: var(--text-main); }
+.advisor-icon-btn:focus-visible { outline: none; box-shadow: var(--shadow-glow); }
+
+.advisor-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.advisor-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.8rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.advisor-tabs button:hover { color: var(--text-main); }
+.advisor-tabs button.active { color: var(--primary-cyan); border-bottom-color: var(--primary-cyan); }
+.advisor-tabs button:focus-visible { outline: none; box-shadow: var(--shadow-glow); border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+
+/* Panels */
+.advisor-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem 1.1rem 1.25rem;
+}
+
+.advisor-panel[hidden] { display: none; }
+
+.advisor-panel-chat { padding: 0; display: flex; }
+.advisor-panel-chat[hidden] { display: none; }
+
+.advisor-summary {
+  margin: 0 0 1rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: rgba(31, 122, 77, 0.08);
+  border: 1px solid rgba(31, 122, 77, 0.2);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.advisor-section + .advisor-section { margin-top: 1.25rem; }
+
+.advisor-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.advisor-count {
+  margin-left: auto;
+  min-width: 1.6rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: var(--radius-full);
+  background: rgb(var(--overlay-rgb) / 0.08);
+  color: var(--text-main);
+  font-size: 0.75rem;
+  text-align: center;
+  text-transform: none;
+}
+
+.advisor-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.advisor-list li {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  border-left-width: 3px;
+  background: var(--bg-card);
+}
+
+.advisor-list li.severity-high { border-left-color: var(--danger); }
+.advisor-list li.severity-medium { border-left-color: #e8a317; }
+.advisor-list li.severity-low { border-left-color: var(--border-subtle); }
+
+.advisor-item-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.advisor-item-head .status-tag { font-size: 0.7rem; }
+
+.advisor-category {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.advisor-item-title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: var(--text-main);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.advisor-item-detail {
+  margin: 0.3rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.advisor-item-meta {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.advisor-action {
+  margin: 0.45rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary-cyan);
+}
+
+.advisor-empty {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.advisor-loading,
+.advisor-error,
+.advisor-stale {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+}
+
+.advisor-loading { color: var(--text-muted); background: rgb(var(--overlay-rgb) / 0.04); }
+.advisor-error { color: var(--danger-text); background: rgba(200, 64, 44, 0.08); border: 1px solid rgba(200, 64, 44, 0.25); }
+.advisor-error p { margin: 0; flex: 1 1 100%; }
+.advisor-stale { color: var(--text-main); background: rgba(232, 163, 23, 0.1); border: 1px solid rgba(232, 163, 23, 0.35); }
+
+.advisor-small-btn { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+
+.advisor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.advisor-note {
+  display: flex;
+  gap: 0.35rem;
+  align-items: flex-start;
+  margin: 0.6rem 0 0;
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.advisor-note svg { flex-shrink: 0; margin-top: 0.1rem; }
+
+/* The chat inside the sidebar fills the panel instead of the AI page's fixed height */
+.ai-chat.ai-chat-compact {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ai-chat-compact .ai-message { max-width: 92%; font-size: 0.86rem; }
+.ai-chat-compact .ai-suggestion { font-size: 0.8rem; padding: 0.5rem 0.7rem; }
+
+.ai-quick-actions {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 0.6rem 1.1rem 0.1rem;
+  scrollbar-width: thin;
+}
+
+.ai-quick-action {
+  flex-shrink: 0;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.ai-quick-action:hover:not(:disabled) { border-color: var(--primary-cyan); color: var(--primary-cyan); }
+.ai-quick-action:focus-visible { outline: none; box-shadow: var(--shadow-glow); }
+.ai-quick-action:disabled { opacity: 0.55; cursor: not-allowed; }
