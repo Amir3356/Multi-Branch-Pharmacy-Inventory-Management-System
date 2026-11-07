@@ -1,0 +1,67 @@
+/* InventoryPage.css - Inventory page view toggles (the shared search & filter bar is in global.css) */
+
+.view-toggle {
+  display: inline-flex;
+  padding: 3px;
+  background: rgb(var(--overlay-rgb) / 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.view-toggle button {
+  padding: 0.45rem 0.85rem;
+  background: transparent;
+  border: 0;
+  border-radius: calc(var(--radius-md) - 3px);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.view-toggle button.active {
+  background: rgba(31, 122, 77, 0.15);
+  color: var(--primary-cyan);
+}
+
+.sort-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.sort-header-btn:hover {
+  color: var(--text-main);
+}
+
+.sort-header-btn .sort-idle {
+  opacity: 0.35;
+}
+
+.sort-header-btn:hover .sort-idle {
+  opacity: 0.8;
+}
+
+.expiry-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--danger-text);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .filter-select {
+    flex: 1 1 100%;
+  }
+}

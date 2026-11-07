@@ -1,0 +1,27 @@
+{
+  "name": "inventory-service",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Product catalog, stock per batch (the only writer of stock), transfers and damaged items",
+  "type": "module",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "migrate": "node migrate.js",
+    "rebuild-stock": "node commands/rebuild-stock.js"
+  },
+  "dependencies": {
+    "bcryptjs": "2.4.3",
+    "dotenv": "16.4.5",
+    "express": "5.1.0",
+    "express-rate-limit": "7.4.1",
+    "luxon": "3.5.0",
+    "node-cron": "4.6.0",
+    "pg": "8.13.1",
+    "zod": "4.6.7"
+  }
+}

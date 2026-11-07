@@ -1,0 +1,51 @@
+# 1. Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+
+# 2. Environment files & secrets
+.env*
+!.env.example
+*.pem
+*.key
+*.cert
+
+# 3. Git metadata
+.git
+.gitignore
+.gitattributes
+.github
+
+# 4. Dockerfiles & Compose files
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# 5. OS and IDE metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 6. Logs & Temp files
+*.log
+logs/
+tmp/
+temp/
+.cache/
+
+# 7. Test artifacts & coverage
+coverage/
+.nyc_output/
+*.test.js
+*.spec.js
+__tests__/
+
+# 8. Documentation
+README.md
+*.md

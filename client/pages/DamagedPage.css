@@ -1,0 +1,5 @@
+/* DamagedPage.css - Damaged goods reporting styles */
+.damaged-summary {
+  display: flex;
+  gap: 1rem;
+}

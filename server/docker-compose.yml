@@ -1,0 +1,90 @@
+# The whole server in containers: PostgreSQL, the gateway and every service. Each service builds from its own folder
+# (<name>/Dockerfile), reads its own <name>/.env, and applies its own migrations when it starts.
+#
+#   for s in */; do cp -n "$s.env.example" "$s.env"; done   # then give every .env the SAME INTERNAL_SERVICE_SECRET
+#   DB_PASSWORD=choose-one docker compose up --build
+#   docker compose exec auth-service npm run seed        # Owner (auth-service/seed/)
+#
+# Inside compose, the database address/password and the service addresses below override what the .env files say.
+# The gateway listens on http://localhost:8000; the other services are reachable only inside the compose network.
+x-service-env: &service-env
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_DATABASE: ${DB_DATABASE:-multi_branch_supermarket}
+  DB_USERNAME: ${DB_USERNAME:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:-postgres}
+  AUTH_SERVICE_URL: http://auth-service:4001
+  USER_SERVICE_URL: http://user-service:4002
+  BRANCH_SERVICE_URL: http://branch-service:4003
+  INVENTORY_SERVICE_URL: http://inventory-service:4004
+  SALES_SERVICE_URL: http://sales-service:4005
+  PROCUREMENT_SERVICE_URL: http://procurement-service:4006
+  REPORTING_SERVICE_URL: http://reporting-service:4007
+  AI_SERVICE_URL: http://ai-service:4008
+  NOTIFICATION_SERVICE_URL: http://notification-service:4009
+
+x-service: &service
+  environment: *service-env
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-multi_branch_supermarket}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+
+  api-gateway:
+    <<: *service
+    build: ./api-gateway
+    env_file: ./api-gateway/.env
+    ports: ["8000:8000"]
+  auth-service:
+    <<: *service
+    build: ./auth-service
+    env_file: ./auth-service/.env
+  user-service:
+    <<: *service
+    build: ./user-service
+    env_file: ./user-service/.env
+  branch-service:
+    <<: *service
+    build: ./branch-service
+    env_file: ./branch-service/.env
+  inventory-service:
+    <<: *service
+    build: ./inventory-service
+    env_file: ./inventory-service/.env
+  sales-service:
+    <<: *service
+    build: ./sales-service
+    env_file: ./sales-service/.env
+  procurement-service:
+    <<: *service
+    build: ./procurement-service
+    env_file: ./procurement-service/.env
+  reporting-service:
+    <<: *service
+    build: ./reporting-service
+    env_file: ./reporting-service/.env
+  ai-service:
+    <<: *service
+    build: ./ai-service
+    env_file: ./ai-service/.env
+  notification-service:
+    <<: *service
+    build: ./notification-service
+    env_file: ./notification-service/.env
+
+volumes:
+  pgdata:

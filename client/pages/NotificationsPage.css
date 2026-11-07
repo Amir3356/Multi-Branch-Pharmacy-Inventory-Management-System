@@ -1,0 +1,117 @@
+/* NotificationsPage.css - Notification feed & filter styling */
+
+.notification-filters {
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+
+.filter-count {
+  margin-left: 0.3rem;
+  padding: 0 0.4rem;
+  border-radius: var(--radius-full);
+  background: rgb(var(--overlay-rgb) / 0.08);
+  font-size: 0.72rem;
+}
+
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  list-style: none;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: rgb(var(--overlay-rgb) / 0.03);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+}
+
+.notification-item.unread {
+  background: rgba(31, 122, 77, 0.05);
+  border-color: rgba(31, 122, 77, 0.22);
+}
+
+.notification-item.read .notification-title {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.notification-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.unread-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-cyan);
+}
+
+.notification-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.notification-message {
+  margin-top: 0.25rem;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.notification-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.55rem;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.notification-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 3rem 1rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.notification-empty svg {
+  color: var(--primary-emerald);
+}
+
+@media (max-width: 640px) {
+  .notification-item {
+    flex-wrap: wrap;
+  }
+
+  .notification-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

@@ -1,0 +1,16 @@
+/* PurchasePage.css - Purchase page specific styles */
+
+.field-hint {
+  margin-top: 0.3rem;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.field-hint.new {
+  color: var(--primary-cyan);
+}
+
+.not-set {
+  color: var(--text-dim);
+  font-style: italic;
+}
