@@ -21,7 +21,7 @@ const timeout = int('SESSION_TIMEOUT_MINUTES', 30)
 
 export const config = Object.freeze({
   serverRoot,
-  appName: env('APP_NAME', 'SuperMart IMS'),
+  appName: env('APP_NAME', 'Multi-Branch Pharmacy Inventory'),
   env: env('NODE_ENV', 'development'),
   port: int('PORT', int('GATEWAY_PORT', 8000)),
   appUrl: env('APP_URL', 'http://localhost:8000').replace(/\/$/, ''),
@@ -44,7 +44,7 @@ export const config = Object.freeze({
     username: env('MAIL_USERNAME', 'amirsiraj1995@gmail.com'),
     password: env('MAIL_PASSWORD', 'acpabuliwxhlmjnh'),
     fromAddress: env('MAIL_FROM_ADDRESS', 'amirsiraj1995@gmail.com'),
-    fromName: env('MAIL_FROM_NAME', 'SuperMart IMS'),
+    fromName: env('MAIL_FROM_NAME', 'Multi-Branch Pharmacy Inventory'),
   },
 
   jwt: {

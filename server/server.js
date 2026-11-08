@@ -122,7 +122,7 @@ server.on('error', (error) => {
 })
 
 server.once('listening', () => {
-  logger.info(`SuperMart IMS server listening on http://localhost:${port}`)
+  logger.info(`Multi-Branch Pharmacy Inventory server listening on http://localhost:${port}`)
 
   // Background scheduled tasks
   schedule('*/5 * * * *', 'expire-inactive-sessions', () => expireInactiveSessions())
