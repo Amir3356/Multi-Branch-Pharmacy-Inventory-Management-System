@@ -52,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthShell title="Welcome Back" subtitle="Sign in to access your supermarket inventory dashboard">
+    <AuthShell title="Welcome Back" subtitle="Sign in to access your pharmacy inventory dashboard">
       <AuthAlert alert={alert} />
 
       <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -61,7 +61,7 @@ export default function LoginPage() {
             id="email"
             type="email"
             className={`input-field ${errors.email ? 'error' : ''}`}
-            placeholder="name@supermart.com"
+            placeholder="name@pharmacy.com"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value)

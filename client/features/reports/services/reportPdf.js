@@ -128,7 +128,7 @@ function drawHBars(doc, chart, x, y, w, h, format) {
   const trackW = w - 24 - labelW - valueW
   items.forEach((item, i) => {
     const ly = y + 42 + i * 16
-    // Long labels ("GreenLife Supermarket · Received") wrap onto a second line instead of being cut off
+    // Long labels ("GreenLife Pharmacy · Received") wrap onto a second line instead of being cut off
     const lines = doc.setFontSize(7.5).setTextColor(...INK).splitTextToSize(item.label, labelW - 4).slice(0, 2)
     if (lines.length === 1) doc.text(lines[0], x + 12, ly + 3)
     else doc.setFontSize(6.5).text(lines, x + 12, ly - 1, { lineHeightFactor: 1.1 }).setFontSize(7.5)

@@ -289,7 +289,7 @@ Two background jobs run on the server:
 
 ### 1. Database
 
-Create an empty PostgreSQL database, for example `createdb supermart`.
+Create an empty PostgreSQL database, for example `createdb multi_branch_pharmacy` (the name `DB_DATABASE` uses in `.env.example`).
 
 ### 2. Server
 

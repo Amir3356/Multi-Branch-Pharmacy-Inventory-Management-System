@@ -48,7 +48,7 @@ export default function BranchesPage() {
 
   return (
     <div className="content-section-card">
-      <PageHeader centered title="Branches" description="Manage supermarket branches across the network: edit details, activate or deactivate, and delete branches.">
+      <PageHeader centered title="Branches" description="Manage pharmacy branches across the network: edit details, activate or deactivate, and delete branches.">
         <button className="primary-action-btn" onClick={() => setShowAddBranch(true)}>
           <Plus size={16} /> Create Branch
         </button>

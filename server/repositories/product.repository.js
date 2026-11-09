@@ -48,16 +48,23 @@ export function createProduct(client, { id, name, category, batch }) {
   )
 }
 
-/** Every product's Batch IDs, oldest first: { batch, product_id, created_at } */
-export const allBatches = () => query('select batch, product_id, created_at from product_batches order by created_at, batch')
+// The paid order that bought the batch (a batch is bought once), or null while it is still free to buy
+const PAID_ORDER = "(select po.id from procurements po where po.batch = pb.batch and po.status = 'paid' order by po.created_at limit 1) as procurement_id"
+
+/** Every product's Batch IDs, oldest first: { batch, product_id, created_at, procurement_id } */
+export const allBatches = () => query(`select pb.batch, pb.product_id, pb.created_at, ${PAID_ORDER} from product_batches pb order by pb.created_at, pb.batch`)
 
 /** The Batch IDs of one product, oldest first */
 export const batchesOf = (productId, client = pool) =>
-  query('select batch, product_id, created_at from product_batches where product_id = $1 order by created_at, batch', [productId], client)
+  query(`select pb.batch, pb.product_id, pb.created_at, ${PAID_ORDER} from product_batches pb where pb.product_id = $1 order by pb.created_at, pb.batch`, [productId], client)
 
 /** The batch row, only when it belongs to this product */
 export const findProductBatch = (productId, batch, client = pool) =>
   one('select * from product_batches where product_id = $1 and batch = $2', [productId, batch], client)
+
+/** The paid order already bought under this Batch ID, or null */
+export const findPaidOrderForBatch = (batch, client = pool) =>
+  one("select id from procurements where batch = $1 and status = 'paid' limit 1", [batch], client)
 
 /** Records a new Batch ID for a product and makes it the product's newest. Call in a transaction. Returns the products row. */
 export async function addBatch(client, productId, batch, byUserId) {

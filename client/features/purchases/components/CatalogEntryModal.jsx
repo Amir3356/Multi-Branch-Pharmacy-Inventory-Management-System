@@ -122,7 +122,7 @@ export default function CatalogEntryModal({ categories, products, onClose, onAdd
                 className={fieldClass('newCategory')}
                 value={form.newCategory}
                 onChange={update('newCategory')}
-                placeholder="e.g. Dairy & Eggs"
+                placeholder="e.g. Antibiotics"
                 maxLength={120}
                 autoComplete="off"
                 autoFocus
@@ -155,7 +155,7 @@ export default function CatalogEntryModal({ categories, products, onClose, onAdd
                 className={fieldClass('newProduct')}
                 value={form.newProduct}
                 onChange={update('newProduct')}
-                placeholder="e.g. Fresh Milk 1L"
+                placeholder="e.g. Amoxicillin 500mg"
                 maxLength={255}
                 autoComplete="off"
                 autoFocus={!creatingCategory}

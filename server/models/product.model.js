@@ -12,7 +12,8 @@ export const toResource = (p) => ({
   batch: p.batch ?? null,
   // Every Batch ID the product has, oldest first ({ batch, createdAt }); procurements buy under one of them and the
   // Inventory Officer receives the stock under the same one. Only the catalog listing loads them (else []).
-  batches: (p.batches ?? []).map((b) => ({ batch: b.batch, createdAt: iso8601(b.created_at) })),
+  // A batch is bought once: procurementId is the paid order that bought it (null while it can still be bought)
+  batches: (p.batches ?? []).map((b) => ({ batch: b.batch, createdAt: iso8601(b.created_at), procurementId: b.procurement_id ?? null })),
   purchasePrice: p.purchase_price === null || p.purchase_price === undefined ? null : Number(p.purchase_price),
   sellingPrice: p.selling_price === null || p.selling_price === undefined ? null : Number(p.selling_price),
 })

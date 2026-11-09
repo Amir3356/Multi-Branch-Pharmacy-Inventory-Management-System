@@ -45,6 +45,8 @@ export default function NewPurchaseModal({ branches, assignedBranchId, products,
   // The product's Batch IDs (Category & Product page), newest first: the order is bought under one, and the Inventory
   // Officer receives its stock under the same one
   const productBatches = [...(product?.batches ?? [])].reverse()
+  // A batch is bought once: a Paid one shows in the list but can't be picked
+  const openBatches = productBatches.filter((b) => !b.procurementId)
   const qty = Number(form.qty)
   const totalCost = Number(form.totalCost)
   // The officer enters what the whole order costs; the unit price follows from it
@@ -56,8 +58,8 @@ export default function NewPurchaseModal({ branches, assignedBranchId, products,
       if (field === 'category') Object.assign(next, { medId: '', batch: '' })
       // Another product, other batches: one with a single batch starts on it
       if (field === 'medId') {
-        const batches = products.find((p) => p.id === value)?.batches ?? []
-        next.batch = batches.length === 1 ? batches[0].batch : ''
+        const open = (products.find((p) => p.id === value)?.batches ?? []).filter((b) => !b.procurementId)
+        next.batch = open.length === 1 ? open[0].batch : ''
       }
       return next
     })
@@ -167,14 +169,26 @@ export default function NewPurchaseModal({ branches, assignedBranchId, products,
           <div className="form-group">
             <label htmlFor="purchase-batch">Batch ID{productBatches.length ? ' *' : ''}</label>
             <select id="purchase-batch" className={`input-field ${errors.batch ? 'error' : ''}`} value={form.batch} onChange={(e) => update('batch', e.target.value)} disabled={!product || !productBatches.length}>
-              <option value="">{!product ? 'Select a product first' : productBatches.length ? `Select Batch ID… (${productBatches.length} for ${product.name})` : 'No Batch ID: one is generated when the stock is received'}</option>
+              <option value="">
+                {!product
+                  ? 'Select a product first'
+                  : !productBatches.length
+                  ? 'No Batch ID: one is generated when the stock is received'
+                  : openBatches.length
+                  ? `Select Batch ID… (${openBatches.length} not yet purchased)`
+                  : 'Every Batch ID of this product is already Paid'}
+              </option>
               {productBatches.map((b) => (
-                <option key={b.batch} value={b.batch}>{b.batch}</option>
+                <option key={b.batch} value={b.batch} disabled={Boolean(b.procurementId)}>
+                  {b.batch}{b.procurementId ? ` · Paid (${b.procurementId})` : ''}
+                </option>
               ))}
             </select>
             {errors.batch
               ? <span className="error-msg">{errors.batch}</span>
-              : product && <span className="field-hint">The Inventory Officer receives this stock under the same Batch ID. Add another batch on the Category & Product page.</span>}
+              : product && productBatches.length > 0 && !openBatches.length
+              ? <span className="field-hint">A batch can only be purchased once. Add a new Batch ID for {product.name} on the Category & Product page to buy it again.</span>
+              : product && <span className="field-hint">A batch can only be purchased once. The Inventory Officer receives this stock under the same Batch ID.</span>}
           </div>
 
           <div className="modal-grid">

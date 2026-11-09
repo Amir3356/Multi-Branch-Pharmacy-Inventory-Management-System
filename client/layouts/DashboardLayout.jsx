@@ -228,7 +228,7 @@ export default function DashboardLayout() {
           </div>
           <div className="brand-title-wrap">
             <span className="logo-text">{storeName}</span>
-            <span className="brand-subtitle">Multi-Branch Supermarket</span>
+            <span className="brand-subtitle">Multi-Branch Pharmacy</span>
           </div>
         </div>
 

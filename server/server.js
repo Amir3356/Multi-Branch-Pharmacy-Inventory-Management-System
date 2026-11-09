@@ -14,7 +14,7 @@ import { apiRouter } from './routes/index.js'
 import { attachRealtime } from './services/realtime.service.js'
 import { expireInactiveSessions, pruneOldSessions } from './services/session.service.js'
 
-setServiceName('supermart-server')
+setServiceName('pharmacy-inventory-server')
 
 const app = express()
 app.disable('x-powered-by')
@@ -55,9 +55,9 @@ app.use(express.urlencoded({ extended: false, limit: '20mb' }))
 const healthHandler = async (req, res) => {
   try {
     await pool.query('select 1')
-    res.json({ service: 'supermart-server', status: 'ok', architecture: 'monolithic' })
+    res.json({ service: 'pharmacy-inventory-server', status: 'ok', architecture: 'monolithic' })
   } catch (error) {
-    res.status(503).json({ service: 'supermart-server', status: 'database unavailable', error: error.message })
+    res.status(503).json({ service: 'pharmacy-inventory-server', status: 'database unavailable', error: error.message })
   }
 }
 app.get('/health', healthHandler)

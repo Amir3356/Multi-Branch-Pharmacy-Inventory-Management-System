@@ -4,7 +4,7 @@ import { validateRules } from '../../utils/validation.js'
 import { CURRENCIES } from '../../models/procurement.model.js'
 import { activeBranchExists } from '../../repositories/procurement.repository.js'
 import { findByName as findCategoryByName } from '../../repositories/category.repository.js'
-import { findProductBatch } from '../../repositories/product.repository.js'
+import { findPaidOrderForBatch, findProductBatch } from '../../repositories/product.repository.js'
 
 /**
  * StoreProcurementRequest. The total is worked out from the Total Cost, never taken as a unit price from the browser.
@@ -38,6 +38,11 @@ export async function validateStoreProcurement(req, res, next) {
     name: 'exists',
     test: async (value) => typeof value === 'string' && typeof data.medId === 'string' && Boolean(await findProductBatch(data.medId, value)),
   }
+  // Once paid, a Batch ID can't be bought again (the database refuses it too: procurements_batch_unique)
+  const notYetBought = async (value, fail) => {
+    const paid = typeof value === 'string' ? await findPaidOrderForBatch(value) : null
+    if (paid) fail(`Batch ID ${value} is already Paid (${paid.id}): a batch can only be purchased once. Add a new Batch ID on the Category & Product page.`)
+  }
   // A Purchase Officer receives stock only into the branch the Owner assigned them in Account Provision
   const assignedBranchOnly = (value, fail) => {
     const user = req.user
@@ -54,7 +59,7 @@ export async function validateStoreProcurement(req, res, next) {
       category: ['required', 'string', 'max:120', knownCategory],
       product: ['required', 'string', 'max:255'],
       medId: ['nullable', 'string', 'max:20'],
-      batch: ['nullable', 'string', 'max:50', productBatch],
+      batch: ['nullable', 'string', 'max:50', productBatch, notYetBought],
       qty: ['required', 'integer', 'min:1', 'max:1000000'],
       // What the whole order costs; the unit price is worked out from it (Total Cost ÷ Quantity)
       totalCost: ['required', 'numeric', 'gt:0', 'max:10000000000'],

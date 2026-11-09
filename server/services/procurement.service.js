@@ -1,4 +1,4 @@
-import { HttpError, abort, audit, isUniqueViolation, money, transaction } from '../utils/index.js'
+import { HttpError, abort, audit, isUniqueViolation, money, transaction, validationError } from '../utils/index.js'
 import { nowSeconds } from '../utils/time.js'
 import { round, toInt } from '../utils/helpers.js'
 import { modelNotFound } from '../utils/support.js'
@@ -63,6 +63,10 @@ async function createOnce(req, data) {
     if (isUniqueViolation(error, IDEMPOTENCY_CONSTRAINT)) {
       const winner = await procurements.findByIdempotencyKey(req.user.id, data.idempotencyKey)
       if (winner) return { procurement: winner, created: false }
+    }
+    // Another order bought this Batch ID at the same moment: a batch is bought once
+    if (isUniqueViolation(error, 'procurements_batch_unique')) {
+      throw validationError({ batch: 'This Batch ID is already Paid: a batch can only be purchased once. Add a new Batch ID on the Category & Product page.' })
     }
     throw error
   }

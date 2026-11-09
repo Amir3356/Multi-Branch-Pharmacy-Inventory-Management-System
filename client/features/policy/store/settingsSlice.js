@@ -4,7 +4,7 @@ import { STORAGE_KEYS, readJson } from '../../../utils'
 const USD_TO_ETB = 161
 
 export const DEFAULT_SETTINGS = {
-  storeName: 'SuperMart IMS',
+  storeName: 'Pharmacy IMS',
   currency: 'ETB',
   defaultBranch: 'all',
   expiryWarningDays: 60,
@@ -33,7 +33,7 @@ const loadSettings = () => {
     ...DEFAULT_SETTINGS,
     ...saved,
     // Browsers that saved the old pharmacy name get the current one
-    storeName: (!saved.storeName || saved.storeName === 'PharmaCare IMS') ? 'SuperMart IMS' : saved.storeName,
+    storeName: (!saved.storeName || ['PharmaCare IMS', 'SuperMart IMS'].includes(saved.storeName)) ? 'Pharmacy IMS' : saved.storeName,
     reorderLevels: { ...DEFAULT_SETTINGS.reorderLevels, ...saved.reorderLevels },
     tax: saved.tax?.version === 3 ? saved.tax : DEFAULT_SETTINGS.tax,
     expenseCategories: saved.expenseCategories || DEFAULT_SETTINGS.expenseCategories

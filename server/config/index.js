@@ -48,7 +48,7 @@ export const config = Object.freeze({
   },
 
   jwt: {
-    secret: env('JWT_SECRET', 'supermart-secret-jwt-key-2026-change-in-production'),
+    secret: env('JWT_SECRET', 'dev-only-insecure-jwt-secret-set-JWT_SECRET-in-env'),
     expiresIn: env('JWT_EXPIRES_IN', '7d'),
   },
 

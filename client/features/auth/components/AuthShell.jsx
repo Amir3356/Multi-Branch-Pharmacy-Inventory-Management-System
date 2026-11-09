@@ -15,7 +15,7 @@ export default function AuthShell({ title, subtitle, children }) {
             <div className="logo-icon-wrapper">
               <Pill size={24} />
             </div>
-            <span className="logo-text">SuperMart IMS</span>
+            <span className="logo-text">Pharmacy IMS</span>
           </div>
           <div className="badge-tag">
             <Activity size={14} /> Inventory v2.4 Active
@@ -23,7 +23,7 @@ export default function AuthShell({ title, subtitle, children }) {
         </div>
 
         <div className="brand-body">
-          <h1 className="brand-title">Multi-Branch Supermarket</h1>
+          <h1 className="brand-title">Multi-Branch Pharmacy</h1>
           <p className="brand-desc">
             Manage your product catalog, track stock at every branch, move goods between branches, and keep purchasing and sales in one place.
           </p>
@@ -41,7 +41,7 @@ export default function AuthShell({ title, subtitle, children }) {
         </div>
 
         <div className="brand-footer">
-          <span>© 2026 SuperMart IMS</span>
+          <span>© 2026 Multi-Branch Pharmacy Inventory Management System</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <ShieldCheck size={14} /> Encrypted Portal
           </span>
@@ -54,7 +54,7 @@ export default function AuthShell({ title, subtitle, children }) {
             <div className="logo-icon-wrapper">
               <Pill size={22} />
             </div>
-            <span className="logo-text">SuperMart IMS</span>
+            <span className="logo-text">Pharmacy IMS</span>
           </div>
 
           <h2 className="form-title">{title}</h2>

@@ -3,6 +3,7 @@ import { findCatalogProduct, nextId } from '../../../utils'
 import { thunkContext } from '../../../redux/thunkHelpers'
 import { categoryAdded, productAdded, productUpdated } from '../../inventory/store/productsSlice'
 import { refreshStock } from '../../inventory/store/stockThunks'
+import { loadProducts } from '../../inventory/store/productsThunks'
 import { procurementBatch } from '../model/procurement'
 import { purchaseSaved } from './purchasesSlice'
 
@@ -22,9 +23,11 @@ const productFor = (procurement) => (dispatch, getState) => {
   return medId
 }
 
-// Paid: the product is ready for Receive Stock at the receiving branch, but nothing is in stock yet
+// Paid: the product is ready for Receive Stock at the receiving branch, but nothing is in stock yet. Its Batch ID is
+// now Paid and can't be bought again: the catalog is reloaded so Create Procurement shows it as Paid.
 const procurementPaid = (procurement) => (dispatch) => {
   dispatch(productFor(procurement))
+  if (procurement.batch) dispatch(loadProducts()).catch(() => {})
 }
 
 // Keeps the browser's copy in step with the API's

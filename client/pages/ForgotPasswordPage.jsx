@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
             id="email"
             type="email"
             className={`input-field ${error ? 'error' : ''}`}
-            placeholder="name@supermart.com"
+            placeholder="name@pharmacy.com"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value)

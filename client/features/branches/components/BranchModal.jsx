@@ -68,7 +68,7 @@ export default function BranchModal({ branch, branches, onClose, onSave }) {
             </div>
             <div>
               <h2 id="add-branch-title">{isEdit ? 'Edit Branch' : 'Create New Branch'}</h2>
-              <p className="page-desc">{isEdit ? `Update the details of ${branch.name}.` : 'Register a new supermarket branch in the network.'}</p>
+              <p className="page-desc">{isEdit ? `Update the details of ${branch.name}.` : 'Register a new pharmacy branch in the network.'}</p>
             </div>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close">

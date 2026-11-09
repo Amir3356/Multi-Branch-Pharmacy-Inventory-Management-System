@@ -2,7 +2,7 @@
   "name": "server",
   "private": true,
   "version": "1.0.0",
-  "description": "Multi-Branch Supermarket Inventory Management System - Monolithic Server",
+  "description": "Multi-Branch Pharmacy Inventory Management System - Monolithic Server",
   "type": "module",
   "main": "server.js",
   "engines": {

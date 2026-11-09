@@ -211,6 +211,7 @@ export default function PurchasePage() {
               <th>{moneyHeader('Unit Purchase Price')}</th>
               <th>{moneyHeader('Total Cost')}</th>
               <th>Purchased On</th>
+              <th>Status</th>
               <th>Delivery</th>
             </tr>
           </thead>
@@ -228,6 +229,8 @@ export default function PurchasePage() {
                   {po.date}
                   {po.createdAt && <div className="page-desc" style={{ margin: 0 }}>{formatTime(new Date(po.createdAt))}</div>}
                 </td>
+                {/* Paid once Record purchase saved it: its Batch ID can't be purchased again */}
+                <td>{po.status ? <StatusTag status={po.status} /> : '—'}</td>
                 {/* Pending until the receiving branch's Inventory Officer adds the stock (Receive Stock), then Arrived */}
                 <td>
                   {deliveryStatus(po) ? <StatusTag status={deliveryStatus(po)} /> : '—'}
@@ -236,7 +239,7 @@ export default function PurchasePage() {
               </tr>
             ))}
             {filteredPurchases.length === 0 && (
-              <EmptyRow colSpan={isAllBranches ? 9 : 8}>
+              <EmptyRow colSpan={isAllBranches ? 10 : 9}>
                 {filtersActive ? 'No purchase records match the filters.' : 'No procurement records found.'}
               </EmptyRow>
             )}
