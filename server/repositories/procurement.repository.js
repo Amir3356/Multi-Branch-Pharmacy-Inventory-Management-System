@@ -34,8 +34,8 @@ export async function createPaid(client, data, createdBy) {
   const total = round(data.totalCost, 2)
   const now = nowSeconds()
   return one(
-    `insert into procurements (id, branch_id, created_by, supplier, category, product, med_id, qty, unit_price, total, currency, status, tx_ref, paid_at, created_at, updated_at, idempotency_key)
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'paid', $1, $12, $12, $12, $13)
+    `insert into procurements (id, branch_id, created_by, supplier, category, product, med_id, qty, unit_price, total, currency, status, tx_ref, paid_at, created_at, updated_at, idempotency_key, batch)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'paid', $1, $12, $12, $12, $13, $14)
      returning *`,
     [
       id,
@@ -51,6 +51,8 @@ export async function createPaid(client, data, createdBy) {
       data.currency,
       now,
       data.idempotencyKey ?? null,
+      // The product's Batch ID the order buys; its stock is received under it
+      data.batch || null,
     ],
     client,
   )

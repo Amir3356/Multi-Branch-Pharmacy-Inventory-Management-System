@@ -13,7 +13,8 @@ const EMPTY_FORM = { category: '', purchaseId: '', expiryDate: '', sellingPrice:
 
 // Inventory's Receive Stock: the Inventory Officer picks the category and product of stock that arrived (a paid order for
 // this branch not added yet), enters the expiration date on the package and the selling price, and
-// adds the units to stock under a batch number the system generates. They don't enter Inventory by themselves; until
+// adds the units to stock under the Batch ID the Purchase Officer bought it under (shown here, read-only; an order
+// without one, or a transfer, gets a batch number the system generates). They don't enter Inventory by themselves; until
 // then the Purchase Officer sees the delivery as Pending.
 // `arrivals`: paid orders and incoming transfers for this branch, not added yet. A transfer brings its expiry date
 // with it (fixedExpiry), so that field is read-only for it.
@@ -122,7 +123,7 @@ export default function ReceiveStockModal({ arrivals, products, branchName, form
                 <option value="">{form.category ? 'Select product…' : 'Select a category first'}</option>
                 {categoryOrders.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.product}{repeated(p.product) || p.kind === 'transfer' ? ` · ${p.note}` : ''}
+                    {p.product}{p.kind === 'procurement' && p.batch ? ` · ${p.batch}` : ''}{repeated(p.product) || p.kind === 'transfer' ? ` · ${p.note}` : ''}
                   </option>
                 ))}
               </select>
@@ -130,7 +131,18 @@ export default function ReceiveStockModal({ arrivals, products, branchName, form
             </div>
           </div>
 
-          {readOnlyField('stock-batch', 'Batch ID', 'Generated automatically when you add the stock')}
+          {readOnlyField(
+            'stock-batch',
+            'Batch ID',
+            procurement?.kind === 'procurement' && procurement.batch
+              ? procurement.batch
+              : procurement
+              ? 'Generated automatically when you add the stock'
+              : 'Select a product to see its Batch ID'
+          )}
+          {procurement?.kind === 'procurement' && procurement.batch && (
+            <span className="field-hint" style={{ marginTop: '-0.5rem' }}>From the Purchase Officer: the stock is added under this Batch ID.</span>
+          )}
 
           <div className="modal-grid">
             {readOnlyField('stock-qty', 'Quantity', procurement ? `${procurement.qty} units` : '—')}

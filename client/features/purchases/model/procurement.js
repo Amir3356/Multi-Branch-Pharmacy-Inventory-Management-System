@@ -17,7 +17,8 @@
  * @property {'Paid'} status           every order is recorded already paid
  * @property {string | null} receivedAt  when the branch's Inventory Officer added the stock (Receive Stock); until then
  *                                       a paid order is not in stock and its delivery is Pending
- * @property {string | null} batch       the batch number generated when it was added to stock (BT-00001, …)
+ * @property {string | null} batch       the product's Batch ID the order was bought under (picked in Create
+ *                                       Procurement; the stock is received under it). Older orders: generated when added to stock
  * @property {string | null} expiryDate  its expiration date (YYYY-MM-DD), entered with the batch
  *
  * Sent to POST /procurements
@@ -27,12 +28,13 @@
  * @property {string} category
  * @property {string} product
  * @property {string} [medId]
+ * @property {string} [batch]           one of the product's Batch IDs (Category & Product page)
  * @property {number} qty
  * @property {number} totalCost          the whole order; the server derives the unit price (totalCost ÷ qty)
  * @property {'ETB' | 'USD'} currency
  */
 
-export const EMPTY_PURCHASE_FORM = { branchId: '', supplier: '', category: '', medId: '', qty: '', totalCost: '' }
+export const EMPTY_PURCHASE_FORM = { branchId: '', supplier: '', category: '', medId: '', batch: '', qty: '', totalCost: '' }
 
 /** The unit purchase price a Total Cost works out to, or null until both numbers are valid */
 export const unitPriceFrom = (totalCost, qty) => (Number.isInteger(qty) && qty > 0 && totalCost > 0 ? Math.round((totalCost / qty) * 100) / 100 : null)
@@ -44,6 +46,7 @@ export const toProcurementPayload = (form, product, qty, totalCost) => ({
   category: product.category,
   product: product.name,
   medId: product.id,
+  ...(form.batch ? { batch: form.batch } : {}),
   totalCost: Math.round(totalCost * 100) / 100,
   qty
 })

@@ -20,6 +20,12 @@ export async function store(req, res) {
   res.status(201).json({ message: `${product.name} added to ${product.category} with Batch ID ${product.batch}.`, product: toResource(product) })
 }
 
+/** POST /products/:product/batches (Purchase Officer): a new Batch ID for a product already in the catalog */
+export async function storeBatch(req, res) {
+  const product = await productService.createBatch(req, req.product)
+  res.status(201).json({ message: `New Batch ID ${product.batch} added for ${product.name} in ${product.category}.`, product: toResource(product) })
+}
+
 /** PATCH /products/:product (Purchase Officer; only before it has stock) */
 export async function update(req, res) {
   const product = await productService.update(req, req.product, req.body)

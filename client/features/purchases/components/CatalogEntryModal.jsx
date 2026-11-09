@@ -8,9 +8,11 @@ const NEW = '__new__'
 // Add Category & Product (Category & Product page): pick an existing category from the list, or choose "Create new
 // category" and type it; then pick a product already filed under it, or choose "Create new product" and type it.
 // Leaving the product out adds just a new category. These are what Create Procurement's Category and Product Name lists offer.
-// `categories` are the existing names, `products` the catalog ({ name, category }); onAddCategory(name) and
-// onAddProduct({ name, category }) return the API's message.
-export default function CatalogEntryModal({ categories, products, onClose, onAddCategory, onAddProduct, onDone }) {
+// Saving a product generates its Batch ID: a new product gets its first one, and picking a product already in the
+// category gives it another one (the same product and category, a new batch the Purchase Officer can buy under).
+// `categories` are the existing names, `products` the catalog ({ id, name, category, batches }); onAddCategory(name),
+// onAddProduct({ name, category }) and onAddBatch(product) return the API's message.
+export default function CatalogEntryModal({ categories, products, onClose, onAddCategory, onAddProduct, onAddBatch, onDone }) {
   // category / product: a picked name, NEW, or ''; newCategory / newProduct: what's typed for NEW
   const [form, setForm] = useState({ category: '', newCategory: '', product: '', newProduct: '' })
   const [errors, setErrors] = useState({})
@@ -33,6 +35,11 @@ export default function CatalogEntryModal({ categories, products, onClose, onAdd
   const typedProduct = form.newProduct.trim()
   const productName = creatingProduct ? categoryProducts.find((n) => n.toLowerCase() === typedProduct.toLowerCase()) ?? typedProduct : form.product
   const productExists = Boolean(productName) && categoryProducts.some((n) => n.toLowerCase() === productName.toLowerCase())
+  // The catalog product a new batch is for, when the picked (or typed) product is already in the category
+  const existingProduct = productExists
+    ? products.find((p) => p.category.toLowerCase() === categoryName.toLowerCase() && p.name.toLowerCase() === productName.toLowerCase())
+    : null
+  const batchCount = existingProduct?.batches?.length ?? 0
 
   const update = (field) => (e) => {
     const value = e.target.value
@@ -50,7 +57,6 @@ export default function CatalogEntryModal({ categories, products, onClose, onAdd
     if (!form.category) return setErrors({ category: 'Select a category, or create a new one.' })
     if (creatingCategory && !typedCategory) return setErrors({ newCategory: 'Enter the new category name.' })
     if (creatingProduct && !typedProduct) return setErrors({ newProduct: 'Enter the new product name.' })
-    if (productExists) return setErrors({ product: `${productName} is already in ${categoryName}. Pick another product or create a new one.` })
     if (categoryExists && !productName) return setErrors({ product: `${categoryName} already exists. Pick "Create new product" to add one to it.` })
 
     setIsSaving(true)
@@ -60,7 +66,9 @@ export default function CatalogEntryModal({ categories, products, onClose, onAdd
       // A new category first, so the product can be filed under it
       if (!categoryExists) messages.push(await onAddCategory(categoryName))
       step = 'product'
-      if (productName) messages.push(await onAddProduct({ name: productName, category: categoryName }))
+      // An existing product gets a new Batch ID; a new one is added with its first
+      if (existingProduct) messages.push(await onAddBatch(existingProduct))
+      else if (productName) messages.push(await onAddProduct({ name: productName, category: categoryName }))
       onDone(messages.join(' '))
     } catch (error) {
       const fieldErrors = error.fieldErrors || {}
@@ -136,7 +144,7 @@ export default function CatalogEntryModal({ categories, products, onClose, onAdd
             </select>
             {errors.product
               ? <span className="error-msg">{errors.product}</span>
-              : productExists && <span className="field-hint">{productName} is already in {categoryName}.</span>}
+              : productExists && <span className="field-hint">{productName} is already in {categoryName}: saving adds a new Batch ID for it.</span>}
           </div>
 
           {creatingProduct && (
@@ -154,7 +162,19 @@ export default function CatalogEntryModal({ categories, products, onClose, onAdd
               />
               {errors.newProduct
                 ? <span className="error-msg">{errors.newProduct}</span>
-                : typedProduct && <span className="field-hint">{productExists ? `${productName} is already in ${categoryName}.` : `It will be added to ${categoryName || 'the new category'}.`}</span>}
+                : typedProduct && <span className="field-hint">{productExists ? `${productName} is already in ${categoryName}: saving adds a new Batch ID for it.` : `It will be added to ${categoryName || 'the new category'}.`}</span>}
+            </div>
+          )}
+
+          {productName && (
+            <div className="form-group">
+              <label htmlFor="catalog-batch">Batch ID</label>
+              <input id="catalog-batch" className="input-field" value="Generated automatically when you save" readOnly disabled />
+              <span className="field-hint">
+                {existingProduct
+                  ? `${productName} gets a new Batch ID (it has ${batchCount} so far). Procurements can then buy it under either batch.`
+                  : 'Procurements buy under this Batch ID, and the Inventory Officer receives the stock under the same one.'}
+              </span>
             </div>
           )}
 

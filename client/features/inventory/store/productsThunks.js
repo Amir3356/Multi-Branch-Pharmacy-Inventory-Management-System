@@ -1,4 +1,4 @@
-import { createProduct, destroyProduct, fetchProducts, updateProduct } from '../../../api/productsApi'
+import { createProduct, createProductBatch, destroyProduct, fetchProducts, updateProduct } from '../../../api/productsApi'
 import { productRemoved, productsLoaded } from './productsSlice'
 
 // The product catalog from the server: loaded first, since procurements, transfers and sales refer to its products
@@ -15,6 +15,13 @@ export const productsPushed = () => (dispatch) => dispatch(loadProducts()).catch
 
 export const addProduct = (data) => async (dispatch) => {
   const { message } = await createProduct(data)
+  await dispatch(loadProducts())
+  return message
+}
+
+// Another Batch ID for a product already in the catalog (the same product and category, a new batch)
+export const addProductBatch = (product) => async (dispatch) => {
+  const { message } = await createProductBatch(product.id)
   await dispatch(loadProducts())
   return message
 }

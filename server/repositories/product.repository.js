@@ -38,7 +38,7 @@ export async function setPrices(client, id, purchasePrice, sellingPrice, byUserI
 export const findSameName = (category, name, exceptId = null) =>
   one('select * from products where category = $1 and lower(name) = lower($2) and id is distinct from $3', [category, name, exceptId])
 
-/** A new catalog product with its Batch ID, without prices (they are set when stock is received). Call in a transaction. */
+/** A new catalog product with its first Batch ID, without prices (they are set when stock is received). Call in a transaction. */
 export function createProduct(client, { id, name, category, batch }) {
   const now = nowSeconds()
   return one(
@@ -46,6 +46,24 @@ export function createProduct(client, { id, name, category, batch }) {
     [id, name, category, batch, now],
     client,
   )
+}
+
+/** Every product's Batch IDs, oldest first: { batch, product_id, created_at } */
+export const allBatches = () => query('select batch, product_id, created_at from product_batches order by created_at, batch')
+
+/** The Batch IDs of one product, oldest first */
+export const batchesOf = (productId, client = pool) =>
+  query('select batch, product_id, created_at from product_batches where product_id = $1 order by created_at, batch', [productId], client)
+
+/** The batch row, only when it belongs to this product */
+export const findProductBatch = (productId, batch, client = pool) =>
+  one('select * from product_batches where product_id = $1 and batch = $2', [productId, batch], client)
+
+/** Records a new Batch ID for a product and makes it the product's newest. Call in a transaction. Returns the products row. */
+export async function addBatch(client, productId, batch, byUserId) {
+  const now = nowSeconds()
+  await client.query('insert into product_batches (batch, product_id, created_by, created_at) values ($1, $2, $3, $4)', [batch, productId, byUserId ?? null, now])
+  return one('update products set batch = $2, updated_at = $3 where id = $1 returning *', [productId, batch, now], client)
 }
 
 export const updateProduct = (id, { name, category }) =>

@@ -4,6 +4,7 @@ import { validateRules } from '../../utils/validation.js'
 import { CURRENCIES } from '../../models/procurement.model.js'
 import { activeBranchExists } from '../../repositories/procurement.repository.js'
 import { findByName as findCategoryByName } from '../../repositories/category.repository.js'
+import { findProductBatch } from '../../repositories/product.repository.js'
 
 /**
  * StoreProcurementRequest. The total is worked out from the Total Cost, never taken as a unit price from the browser.
@@ -11,7 +12,7 @@ import { findByName as findCategoryByName } from '../../repositories/category.re
  */
 export async function validateStoreProcurement(req, res, next) {
   const data = normalizeInput(req.body ?? {})
-  for (const field of ['supplier', 'category', 'product']) {
+  for (const field of ['supplier', 'category', 'product', 'batch']) {
     if (Object.hasOwn(data, field)) data[field] = toCleanString(data[field]).trim()
   }
   data.currency = toCleanString(Object.hasOwn(data, 'currency') ? data.currency : 'ETB').toUpperCase()
@@ -31,6 +32,12 @@ export async function validateStoreProcurement(req, res, next) {
       return Boolean(category)
     },
   }
+  // The Batch ID picked in Create Procurement must be one the Purchase Officer generated for this product
+  // (Category & Product page); the Inventory Officer receives the stock under it
+  const productBatch = {
+    name: 'exists',
+    test: async (value) => typeof value === 'string' && typeof data.medId === 'string' && Boolean(await findProductBatch(data.medId, value)),
+  }
   // A Purchase Officer receives stock only into the branch the Owner assigned them in Account Provision
   const assignedBranchOnly = (value, fail) => {
     const user = req.user
@@ -47,6 +54,7 @@ export async function validateStoreProcurement(req, res, next) {
       category: ['required', 'string', 'max:120', knownCategory],
       product: ['required', 'string', 'max:255'],
       medId: ['nullable', 'string', 'max:20'],
+      batch: ['nullable', 'string', 'max:50', productBatch],
       qty: ['required', 'integer', 'min:1', 'max:1000000'],
       // What the whole order costs; the unit price is worked out from it (Total Cost ÷ Quantity)
       totalCost: ['required', 'numeric', 'gt:0', 'max:10000000000'],
@@ -56,6 +64,7 @@ export async function validateStoreProcurement(req, res, next) {
     {
       'branchId.exists': 'Choose an active branch.',
       'category.exists': 'Choose a category from the list. Add new ones on the Category & Product page.',
+      'batch.exists': 'Choose a Batch ID of this product from the list. Add new ones on the Category & Product page.',
       'currency.in': 'Orders can only be recorded in ETB or USD. Change the currency in Policy settings.',
       'idempotencyKey.required': 'This order is missing its Idempotency-Key header. Reload the page and try again.',
       'idempotencyKey.uuid': 'The Idempotency-Key header must be a UUID.',

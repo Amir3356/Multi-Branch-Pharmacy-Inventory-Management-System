@@ -6,14 +6,15 @@ import { useMoneyColumns } from '../hooks'
 import { selectProducts } from '../features/inventory/store/productsSlice'
 import { selectInventory } from '../features/inventory/store/selectors'
 import { selectPurchases } from '../features/purchases/store/purchasesSlice'
-import { addProduct } from '../features/inventory/store/productsThunks'
+import { addProduct, addProductBatch } from '../features/inventory/store/productsThunks'
 import { selectProcurementCategories } from '../features/purchases/store/procurementCategoriesSlice'
 import { addProcurementCategory, loadProcurementCategories } from '../features/purchases/store/procurementCategoriesThunks'
 import CatalogEntryModal from '../features/purchases/components/CatalogEntryModal'
 
 // Category & Product (Purchase Officer): every category with the products filed under it, which is what Create
-// Procurement's Category and Product Name lists offer. Add Category & Product opens the form with both fields. Batch
-// IDs aren't set here: the system generates one when the Inventory Officer receives the stock (Inventory page).
+// Procurement's Category and Product Name lists offer. Add Category & Product opens the form with both fields; saving a
+// product generates its Batch ID (saving the same product again gives it another one). Each batch is its own row:
+// procurements buy under a Batch ID and the Inventory Officer receives the stock under the same one (Inventory page).
 export default function CategoryProductPage() {
   const dispatch = useDispatch()
   const { moneyHeader, formatAmount } = useMoneyColumns()
@@ -34,15 +35,20 @@ export default function CategoryProductPage() {
       .finally(() => setIsLoading(false))
   }, [dispatch])
 
-  // One row per product, A to Z within each category; a category with no products yet gets one row of its own
+  // One row per Batch ID (oldest first) of each product, A to Z within each category; a product with no batch yet gets
+  // one row, and a category with no products yet gets one row of its own
   const rows = useMemo(() => {
     return categories.flatMap((c) => {
       const inCategory = products
         .filter((p) => p.category?.toLowerCase() === c.name?.toLowerCase())
         .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
       return inCategory.length
-        ? inCategory.map((p) => ({ key: p.id, category: c.name, product: p }))
-        : [{ key: `c-${c.id}`, category: c.name, product: null }]
+        ? inCategory.flatMap((p) =>
+            p.batches?.length
+              ? p.batches.map((b, i) => ({ key: `${p.id}-${b.batch}`, category: c.name, product: p, batch: b.batch, firstBatch: i === 0 }))
+              : [{ key: p.id, category: c.name, product: p, batch: null, firstBatch: true }]
+          )
+        : [{ key: `c-${c.id}`, category: c.name, product: null, batch: null }]
     })
   }, [categories, products])
 
@@ -66,7 +72,8 @@ export default function CategoryProductPage() {
       if (!query) return true
       const matchName = row.product?.name?.toLowerCase().includes(query)
       const matchCategory = row.category?.toLowerCase().includes(query)
-      return Boolean(matchName || matchCategory)
+      const matchBatch = row.batch?.toLowerCase().includes(query)
+      return Boolean(matchName || matchCategory || matchBatch)
     })
   }, [rows, categoryFilter, productFilter, searchQuery])
 
@@ -80,13 +87,16 @@ export default function CategoryProductPage() {
 
   const price = (value) => (value === null || value === undefined ? '—' : formatAmount(value))
 
-  // From the product's paid procurements: Total Cost is everything spent on it, Unit Purchase Price the latest order's
-  // (falling back to the catalog's price). Orders match by product id, else by name within the same category.
-  const costs = (product) => {
+  // From the batch's paid procurements: Total Cost is everything spent on it, Unit Purchase Price the latest order's
+  // (falling back to the catalog's price). Orders match by product id, else by name within the same category, then by
+  // Batch ID; orders not bought under one of the product's batches (older ones) count towards its first batch.
+  const costs = (product, batch, firstBatch) => {
+    const productBatches = new Set((product.batches ?? []).map((b) => b.batch))
     const paid = purchases.filter(
       (o) =>
         o.status === 'Paid' &&
-        (o.medId ? o.medId === product.id : o.product?.toLowerCase() === product.name.toLowerCase() && o.category?.toLowerCase() === product.category.toLowerCase())
+        (o.medId ? o.medId === product.id : o.product?.toLowerCase() === product.name.toLowerCase() && o.category?.toLowerCase() === product.category.toLowerCase()) &&
+        (o.batch && productBatches.has(o.batch) ? o.batch === batch : firstBatch)
     )
     const latest = paid.reduce((a, b) => ((b.createdAt || b.date) > (a?.createdAt || a?.date || '') ? b : a), null)
     return {
@@ -95,10 +105,14 @@ export default function CategoryProductPage() {
     }
   }
 
-  // Total Selling Price, as the Inventory page shows it (Current Stock × Unit Selling Price), added up over every batch
-  // of the product in stock at any branch. null ("—") while none of its stock has a selling price yet.
-  const totalSellingPrice = (product) => {
-    const priced = inventory.filter((i) => i.medId === product.id && i.stock > 0 && i.sellingPrice != null)
+  // Total Selling Price, as the Inventory page shows it (Current Stock × Unit Selling Price), added up over the batch's
+  // stock at every branch (stock under a batch that isn't one of the product's counts towards its first batch).
+  // null ("—") while none of its stock has a selling price yet.
+  const totalSellingPrice = (product, batch, firstBatch) => {
+    const productBatches = new Set((product.batches ?? []).map((b) => b.batch))
+    const priced = inventory.filter(
+      (i) => i.medId === product.id && i.stock > 0 && i.sellingPrice != null && (productBatches.has(i.batch) ? i.batch === batch : firstBatch)
+    )
     return priced.length ? priced.reduce((sum, i) => sum + i.stock * i.sellingPrice, 0) : null
   }
 
@@ -119,7 +133,7 @@ export default function CategoryProductPage() {
           <input
             type="search"
             className="input-field"
-            placeholder="Search by product name or category…"
+            placeholder="Search by product name, category or Batch ID…"
             aria-label="Search category and product"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -177,6 +191,7 @@ export default function CategoryProductPage() {
         <table className="data-table">
           <thead>
             <tr>
+              <th>Batch ID</th>
               <th>Category</th>
               <th>Product Name</th>
               <th>{moneyHeader('Total Cost')}</th>
@@ -187,20 +202,21 @@ export default function CategoryProductPage() {
           </thead>
           <tbody>
             {filteredRows.map((row) => {
-              const cost = row.product ? costs(row.product) : null
+              const cost = row.product ? costs(row.product, row.batch, row.firstBatch) : null
               return (
                 <tr key={row.key}>
+                  <td className="nowrap">{row.batch ? <span className="batch-badge">{row.batch}</span> : '—'}</td>
                   <td>{row.category}</td>
                   <td className="fw-600">{row.product ? row.product.name : <span className="field-hint">No products yet</span>}</td>
                   <td className="nowrap">{cost ? price(cost.total) : '—'}</td>
                   <td className="nowrap">{cost ? price(cost.unit) : '—'}</td>
                   <td className="nowrap">{row.product ? price(row.product.sellingPrice) : '—'}</td>
-                  <td className="nowrap">{row.product ? price(totalSellingPrice(row.product)) : '—'}</td>
+                  <td className="nowrap">{row.product ? price(totalSellingPrice(row.product, row.batch, row.firstBatch)) : '—'}</td>
                 </tr>
               )
             })}
             {filteredRows.length === 0 && (
-              <EmptyRow colSpan={6}>
+              <EmptyRow colSpan={7}>
                 {isLoading
                   ? 'Loading…'
                   : rows.length === 0
@@ -219,6 +235,7 @@ export default function CategoryProductPage() {
           onClose={() => setShowForm(false)}
           onAddCategory={(name) => dispatch(addProcurementCategory(name))}
           onAddProduct={(data) => dispatch(addProduct(data))}
+          onAddBatch={(product) => dispatch(addProductBatch(product))}
           onDone={(text) => {
             setShowForm(false)
             setNotice({ type: 'success', text })

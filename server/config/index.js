@@ -23,9 +23,9 @@ export const config = Object.freeze({
   serverRoot,
   appName: env('APP_NAME', 'Multi-Branch Pharmacy Inventory'),
   env: env('NODE_ENV', 'development'),
-  port: int('PORT', int('GATEWAY_PORT', 8000)),
-  appUrl: env('APP_URL', 'http://localhost:8000').replace(/\/$/, ''),
-  apiUrl: env('API_URL', 'http://localhost:8000/api').replace(/\/$/, ''),
+  port: int('PORT', int('GATEWAY_PORT', 7000)),
+  appUrl: env('APP_URL', 'http://localhost:7000').replace(/\/$/, ''),
+  apiUrl: env('API_URL', 'http://localhost:7000/api').replace(/\/$/, ''),
   frontendUrl: env('FRONTEND_URL', 'http://localhost:5173').replace(/\/$/, ''),
   trustedProxies: env('TRUSTED_PROXIES', 'loopback'),
 

@@ -231,7 +231,7 @@ export default function PurchasePage() {
                 {/* Pending until the receiving branch's Inventory Officer adds the stock (Receive Stock), then Arrived */}
                 <td>
                   {deliveryStatus(po) ? <StatusTag status={deliveryStatus(po)} /> : '—'}
-                  {po.receivedAt && po.batch && <div className="page-desc" style={{ margin: 0 }}>Batch {po.batch}</div>}
+                  {po.batch && <div className="page-desc" style={{ margin: 0 }}>Batch {po.batch}</div>}
                 </td>
               </tr>
             ))}

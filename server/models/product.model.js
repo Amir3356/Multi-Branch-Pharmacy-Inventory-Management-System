@@ -1,3 +1,5 @@
+import { iso8601 } from '../utils/time.js'
+
 /** products: the shared catalog. Prices are the same at every branch, null until first set. */
 export const TABLE = 'products'
 
@@ -6,8 +8,11 @@ export const toResource = (p) => ({
   id: p.id,
   name: p.name,
   category: p.category,
-  // Set when the Purchase Officer saved it; its stock is received under this batch
+  // The newest Batch ID, generated when the Purchase Officer saved it (Category & Product page)
   batch: p.batch ?? null,
+  // Every Batch ID the product has, oldest first ({ batch, createdAt }); procurements buy under one of them and the
+  // Inventory Officer receives the stock under the same one. Only the catalog listing loads them (else []).
+  batches: (p.batches ?? []).map((b) => ({ batch: b.batch, createdAt: iso8601(b.created_at) })),
   purchasePrice: p.purchase_price === null || p.purchase_price === undefined ? null : Number(p.purchase_price),
   sellingPrice: p.selling_price === null || p.selling_price === undefined ? null : Number(p.selling_price),
 })

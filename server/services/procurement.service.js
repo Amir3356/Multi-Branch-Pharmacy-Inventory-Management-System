@@ -74,6 +74,7 @@ function sameOrder(procurement, data) {
     procurement.supplier === data.supplier &&
     procurement.product === data.product &&
     procurement.med_id === (data.medId ?? null) &&
+    procurement.batch === (data.batch || null) &&
     procurement.qty === toInt(data.qty) &&
     Number(procurement.total) === round(data.totalCost, 2) &&
     procurement.currency === data.currency
@@ -82,7 +83,8 @@ function sameOrder(procurement, data) {
 
 /** Adds a paid order's stock to the Inventory Officer's branch, once. Returns the updated row. */
 export async function receive(req, procurement, data) {
-  // The "Procurement receipt" recipe: inventory-service generates the batch number (BT-00001, …), adds the units and
+  // The "Procurement receipt" recipe: the stock goes in under the Batch ID the order was bought under (older orders
+  // without one get a generated batch number, BT-00001, …), inventory-service adds the units and
   // sets the product's shared prices (what one unit cost on this order, what it sells for at every branch). The
   // reference makes a retry after a failed save get the same batch back instead of adding the units twice.
   const received = await transaction(async (client) => {
@@ -98,6 +100,7 @@ export async function receive(req, procurement, data) {
         product: locked.product,
         category: locked.category,
         medId: locked.med_id,
+        batch: locked.batch,
         expiry: data.expiryDate,
         units: locked.qty,
         receivedAt: receivedAt.toISOString(),

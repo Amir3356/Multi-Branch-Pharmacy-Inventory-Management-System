@@ -1,7 +1,10 @@
 import { HttpError, audit, broadcast, isUniqueViolation, money, nextId, transaction, validationError } from '../utils/index.js'
 import * as categories from '../repositories/category.repository.js'
 import {
+  addBatch,
+  allBatches,
   allProducts,
+  batchesOf,
   createProduct,
   deleteProduct,
   findSameName,
@@ -10,8 +13,13 @@ import {
   updateProduct,
 } from '../repositories/product.repository.js'
 
-/** The whole catalog, by category then name */
-export const list = () => allProducts()
+/** The whole catalog, by category then name, each product with its Batch IDs (oldest first) */
+export async function list() {
+  const [products, batches] = await Promise.all([allProducts(), allBatches()])
+  const byProduct = new Map()
+  for (const b of batches) byProduct.set(b.product_id, [...(byProduct.get(b.product_id) ?? []), b])
+  return products.map((p) => ({ ...p, batches: byProduct.get(p.id) ?? [] }))
+}
 
 /** Every screen reloads the catalog (e.g. a cashier can sell the product right away) */
 export const announceProducts = () => broadcast('products', 'products.changed', {})
@@ -63,17 +71,31 @@ export async function create(req, data) {
   await checkUnique(data.name, category)
   let product
   try {
-    // No Batch ID yet: one is generated each time the Inventory Officer receives stock of it (Receive Stock)
-    product = await transaction(async (client) =>
-      createProduct(client, { id: await nextId(client, 'products', 'MED'), name: data.name, category, batch: null }),
-    )
+    // Its first Batch ID is generated now, on save; procurements buy under it and the Inventory Officer receives the
+    // stock under the same one. Taken from the shared 'batches' counter, so it never clashes with another batch.
+    product = await transaction(async (client) => {
+      const created = await createProduct(client, { id: await nextId(client, 'products', 'MED'), name: data.name, category, batch: null })
+      const withBatch = await addBatch(client, created.id, await nextId(client, 'batches', 'BT'), req.user.id)
+      return { ...withBatch, batches: await batchesOf(created.id, client) }
+    })
   } catch (error) {
     if (isUniqueViolation(error)) throw duplicate(data.name, category)
     throw error
   }
-  audit(req, { module: 'Products', action: 'Product added', recordId: product.id, description: `${product.name} added to ${category}.`, type: 'create', after: product })
+  audit(req, { module: 'Products', action: 'Product added', recordId: product.id, description: `${product.name} added to ${category} with Batch ID ${product.batch}.`, type: 'create', after: product })
   announceProducts()
   return product
+}
+
+/** Another Batch ID for a product already in the catalog: the same product and category, bought as a new batch */
+export async function createBatch(req, product) {
+  const updated = await transaction(async (client) => {
+    const withBatch = await addBatch(client, product.id, await nextId(client, 'batches', 'BT'), req.user.id)
+    return { ...withBatch, batches: await batchesOf(product.id, client) }
+  })
+  audit(req, { module: 'Products', action: 'Batch added', recordId: product.id, description: `New Batch ID ${updated.batch} for ${product.name} (${product.category}).`, type: 'create', before: product, after: updated })
+  announceProducts()
+  return updated
 }
 
 export async function update(req, product, data) {

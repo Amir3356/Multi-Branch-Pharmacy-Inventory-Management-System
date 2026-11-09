@@ -10,7 +10,7 @@ import dotenv from 'dotenv'
 const serverRoot = fs.realpathSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'))
 dotenv.config({ path: path.join(serverRoot, '.env'), quiet: true })
 
-const port = Number(process.env.PORT) || Number(process.env.GATEWAY_PORT) || 8000
+const port = Number(process.env.PORT) || Number(process.env.GATEWAY_PORT) || 7000
 
 const run = (cmd, args) => {
   try {
@@ -77,7 +77,25 @@ for (const line of run('ps', ['-eo', 'pid=,command=']).split('\n')) {
   for (const child of run('pgrep', ['-P', String(pid)]).split('\n').map(Number).filter(Boolean)) targets.add(child)
 }
 
-// 2. Whatever is listening on the port
+// 2. A Docker container publishing the port. Docker's port forwarder (docker-proxy) runs as root, so lsof cannot
+//    see it and the port would otherwise look free. Containers with a restart policy come back on every reboot,
+//    so say exactly which ones they are and how to stop them for good.
+const dockerHolders = run('docker', ['ps', '--filter', `publish=${port}`, '--format', '{{.Names}}\t{{.Label "com.docker.compose.project.working_dir"}}'])
+  .split('\n')
+  .filter(Boolean)
+  .map((line) => line.split('\t'))
+if (dockerHolders.length) {
+  console.error(`\n✖ Port ${port} is published by Docker container(s): ${dockerHolders.map(([name]) => name).join(', ')}`)
+  for (const dir of new Set(dockerHolders.map(([, dir]) => dir).filter(Boolean))) {
+    console.error(`  They belong to the compose project in ${dir}`)
+    console.error(`  Stop them with:  (cd "${dir}" && docker compose stop)`)
+  }
+  console.error(`  Or stop individual containers with:  docker stop ${dockerHolders.map(([name]) => name).join(' ')}`)
+  console.error(`  (Stopped containers stay stopped after a reboot.) Or set a different PORT in server/.env.\n`)
+  process.exit(1)
+}
+
+// 3. Whatever is listening on the port
 const pids = listeners()
 if (pids.length === 0 && targets.size === 0) process.exit(0)
 

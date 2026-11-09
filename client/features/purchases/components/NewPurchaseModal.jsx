@@ -42,6 +42,9 @@ export default function NewPurchaseModal({ branches, assignedBranchId, products,
   const categoryProducts = products.filter((p) => p.category === form.category).sort((a, b) => a.name.localeCompare(b.name))
   // Picked from the product catalog (the same list for every user)
   const product = categoryProducts.find((p) => p.id === form.medId)
+  // The product's Batch IDs (Category & Product page), newest first: the order is bought under one, and the Inventory
+  // Officer receives its stock under the same one
+  const productBatches = [...(product?.batches ?? [])].reverse()
   const qty = Number(form.qty)
   const totalCost = Number(form.totalCost)
   // The officer enters what the whole order costs; the unit price follows from it
@@ -50,13 +53,19 @@ export default function NewPurchaseModal({ branches, assignedBranchId, products,
   const update = (field, value) => {
     setForm((prev) => {
       const next = { ...prev, [field]: value }
-      if (field === 'category') next.medId = ''
+      if (field === 'category') Object.assign(next, { medId: '', batch: '' })
+      // Another product, other batches: one with a single batch starts on it
+      if (field === 'medId') {
+        const batches = products.find((p) => p.id === value)?.batches ?? []
+        next.batch = batches.length === 1 ? batches[0].batch : ''
+      }
       return next
     })
     setErrors((prev) => ({
       ...prev,
       [field]: undefined,
-      ...(field === 'category' ? { medId: undefined } : {})
+      ...(field === 'category' ? { medId: undefined, batch: undefined } : {}),
+      ...(field === 'medId' ? { batch: undefined } : {})
     }))
   }
 
@@ -153,6 +162,19 @@ export default function NewPurchaseModal({ branches, assignedBranchId, products,
             {errors.medId
               ? <span className="error-msg">{errors.medId}</span>
               : form.category && !categoryProducts.length && <span className="field-hint">Add products to {form.category} on the Category & Product page in the sidebar.</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="purchase-batch">Batch ID{productBatches.length ? ' *' : ''}</label>
+            <select id="purchase-batch" className={`input-field ${errors.batch ? 'error' : ''}`} value={form.batch} onChange={(e) => update('batch', e.target.value)} disabled={!product || !productBatches.length}>
+              <option value="">{!product ? 'Select a product first' : productBatches.length ? `Select Batch ID… (${productBatches.length} for ${product.name})` : 'No Batch ID: one is generated when the stock is received'}</option>
+              {productBatches.map((b) => (
+                <option key={b.batch} value={b.batch}>{b.batch}</option>
+              ))}
+            </select>
+            {errors.batch
+              ? <span className="error-msg">{errors.batch}</span>
+              : product && <span className="field-hint">The Inventory Officer receives this stock under the same Batch ID. Add another batch on the Category & Product page.</span>}
           </div>
 
           <div className="modal-grid">

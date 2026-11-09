@@ -103,7 +103,7 @@ const io = attachRealtime(server)
 
 // Start listening. On a nodemon restart the previous process can still be letting go of the port for a moment,
 // so "port in use" is retried for a few seconds before giving up, instead of crashing straight away.
-const port = Number(process.env.PORT) || config.port || 8000
+const port = Number(process.env.PORT) || config.port || 7000
 const LISTEN_RETRY_MS = 500
 const LISTEN_GIVE_UP_MS = 15_000
 const listenStarted = Date.now()

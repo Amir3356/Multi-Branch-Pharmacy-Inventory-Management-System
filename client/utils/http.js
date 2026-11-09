@@ -1,5 +1,5 @@
 // Thin fetch wrapper for the API gateway. Every call returns parsed JSON or throws ApiError.
-export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '')
+export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:7000/api').replace(/\/$/, '')
 
 export class ApiError extends Error {
   constructor(message, status, fieldErrors = {}) {
